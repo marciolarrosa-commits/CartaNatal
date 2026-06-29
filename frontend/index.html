@@ -141,8 +141,8 @@ input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;}
 
 /* ── Columna central ── */
 .col-center{display:flex;flex-direction:column;gap:4px;overflow:hidden;}
-.wheel-wrap{flex:1;min-height:0;background:var(--surf);border:1px solid var(--brd);border-radius:8px;padding:5px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-.wheel-wrap canvas{display:block;}
+.wheel-wrap{flex:1;min-height:0;background:var(--surf);border:1px solid var(--brd);border-radius:8px;padding:5px;display:flex;align-items:center;justify-content:center;overflow:hidden;max-height:calc(100vh - 220px);}
+.wheel-wrap canvas{display:block;max-width:100%;max-height:100%;}
 
 /* Big 3 — fila compacta */
 .big3{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;flex-shrink:0;}
@@ -444,8 +444,10 @@ function drawWheel(chart){
   const canvas=document.getElementById('wheel');
   const wrap=document.getElementById('wheel-wrap');
   const rect=wrap.getBoundingClientRect();
-  const sz=Math.floor(Math.min(rect.width,rect.height))-10;
-  if(sz<100)return;
+  // Tamaño seguro: usa el menor de ancho/alto del contenedor, con límite máximo
+  const maxSz = Math.min(window.innerHeight - 220, 680);
+  const sz=Math.floor(Math.min(rect.width, rect.height, maxSz))-10;
+  if(sz<100){setTimeout(()=>drawWheel(chart),200);return;}
   canvas.width=sz;canvas.height=sz;
   const ctx=canvas.getContext('2d');
   const W=sz,cx=W/2,cy=W/2;
@@ -477,8 +479,8 @@ function drawWheel(chart){
   const mcA=ca(mcLon);ctx.font='bold '+Math.round(W*.018)+'px Inter';ctx.fillStyle='#c9a84c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('MC '+chart.mc.deg+'°'+String(chart.mc.min).padStart(2,'0')+"'",cx+(R-W*.019)*Math.cos(mcA),cy+(R-W*.019)*Math.sin(mcA));
   // Center
   ctx.beginPath();ctx.arc(cx,cy,rH0,0,Math.PI*2);ctx.fillStyle='#05080f';ctx.fill();ctx.strokeStyle='#2d3748';ctx.lineWidth=.8;ctx.stroke();
-  // Aspect lines
-  const ASPC={0:['rgba(160,60,200,.72)',[],1.4],60:['rgba(70,130,220,.68)',[5,4],1],90:['rgba(220,50,50,.78)',[],1.4],120:['rgba(50,110,220,.72)',[],1.8],150:['rgba(200,140,40,.52)',[4,4],.8],180:['rgba(220,50,50,.62)',[6,4],1.1]};
+  // Aspect lines — colores sólidos y visibles
+  const ASPC={0:['rgba(210,100,255,1)',[],2.2],60:['rgba(90,190,255,1)',[5,3],1.8],90:['rgba(255,75,75,1)',[],2.2],120:['rgba(255,255,255,1)',[],2.8],150:['rgba(255,210,70,1)',[4,3],1.5],180:['rgba(255,120,120,1)',[7,4],1.8]};
   chart.aspects.forEach(asp=>{const p1=chart.planets[asp.p1],p2=chart.planets[asp.p2];if(!p1||!p2)return;const cfg=ASPC[asp.angle]||['rgba(255,255,255,.3)',[],1];const a1=ca(p1.lon),a2=ca(p2.lon);ctx.beginPath();ctx.moveTo(cx+rH0*Math.cos(a1),cy+rH0*Math.sin(a1));ctx.lineTo(cx+rH0*Math.cos(a2),cy+rH0*Math.sin(a2));ctx.strokeStyle=cfg[0];ctx.lineWidth=cfg[2];ctx.setLineDash(cfg[1]);ctx.stroke();ctx.setLineDash([]);});
   // Planets
   const plist=P_ORDER.map(k=>{const p=chart.planets[k];if(!p)return null;return{key:k,p,baseA:ca(p.lon),drawA:ca(p.lon)};}).filter(Boolean);
