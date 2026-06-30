@@ -461,7 +461,7 @@ function drawWheel(chart,sz){
   canvas.width=sz;canvas.height=sz;
   const ctx=canvas.getContext('2d');
   const W=sz,cx=W/2,cy=W/2;
-  const R=W*.455,rP1=R*.856,rP0=R*.67,rS1=rP0,rS0=R*.488,rH1=rS0,rH0=R*.308;
+  const R=W*.455,rP1=R*.94,rP0=R*.80,rS1=rP0,rS0=R*.665,rH1=rS0,rH0=R*.42;
   ctx.clearRect(0,0,W,W);
   ctx.beginPath();ctx.arc(cx,cy,R+1,0,Math.PI*2);ctx.fillStyle='#070b12';ctx.fill();
   const ascLon=chart.asc.lon,mcLon=chart.mc.lon;
@@ -492,13 +492,12 @@ function drawWheel(chart,sz){
   const plist=P_ORDER.map(k=>{const p=chart.planets[k];if(!p)return null;return{key:k,p,baseA:ca(p.lon),drawA:ca(p.lon)};}).filter(Boolean);
   const MIN_GAP=0.19;for(let it=0;it<30;it++){let mv=false;for(let i=0;i<plist.length;i++)for(let j=i+1;j<plist.length;j++){let df=plist[j].drawA-plist[i].drawA;if(df>Math.PI)df-=2*Math.PI;if(df<-Math.PI)df+=2*Math.PI;if(Math.abs(df)<MIN_GAP){const push=(MIN_GAP-Math.abs(df))/2+.003;plist[i].drawA-=push*(df<0?-1:1);plist[j].drawA+=push*(df<0?-1:1);mv=true;}}if(!mv)break;}
   const symR=(rP0+rP1)/2,symSz=Math.round(W*.05);
-  // Aspect lines — conectan los SÍMBOLOS de los planetas (radio symR), no el anillo de casas.
-  // Esto hace que las líneas realmente atraviesen el centro de planeta a planeta, en vez de
-  // quedar confinadas a un círculo pequeño que deja un hueco hasta los símbolos.
-  const ASPC={0:['rgba(210,100,255,1)',[],2.2],60:['rgba(90,190,255,1)',[5,3],1.8],90:['rgba(255,75,75,1)',[],2.2],120:['rgba(255,255,255,1)',[],2.8],150:['rgba(255,210,70,1)',[4,3],1.5],180:['rgba(255,120,120,1)',[7,4],1.8]};
+  // Aspect lines — dibujadas en el círculo central limpio (rH0), separadas
+  // visualmente del anillo de casas/signos/planetas, igual que en la referencia.
+  const ASPC={0:['rgba(210,100,255,1)',[],1.6],60:['rgba(90,190,255,1)',[5,3],1.3],90:['rgba(255,75,75,1)',[],1.6],120:['rgba(255,255,255,1)',[],2],150:['rgba(255,210,70,1)',[4,3],1.1],180:['rgba(255,120,120,1)',[7,4],1.3]};
   const radByKey={};plist.forEach(pl=>radByKey[pl.key]={a:pl.drawA});
   chart.aspects.forEach(asp=>{const r1=radByKey[asp.p1],r2=radByKey[asp.p2];if(!r1||!r2)return;const cfg=ASPC[asp.angle]||['rgba(255,255,255,.3)',[],1];
-    ctx.beginPath();ctx.moveTo(cx+symR*Math.cos(r1.a),cy+symR*Math.sin(r1.a));ctx.lineTo(cx+symR*Math.cos(r2.a),cy+symR*Math.sin(r2.a));
+    ctx.beginPath();ctx.moveTo(cx+rH0*Math.cos(r1.a),cy+rH0*Math.sin(r1.a));ctx.lineTo(cx+rH0*Math.cos(r2.a),cy+rH0*Math.sin(r2.a));
     ctx.strokeStyle=cfg[0];ctx.lineWidth=cfg[2];ctx.setLineDash(cfg[1]);ctx.stroke();ctx.setLineDash([]);});
   plist.forEach(({key,p,baseA,drawA})=>{const col=PCOLS[key]||'#e0e0e0';const px=cx+symR*Math.cos(drawA),py=cy+symR*Math.sin(drawA);
     ctx.beginPath();ctx.moveTo(cx+rP1*Math.cos(baseA),cy+rP1*Math.sin(baseA));ctx.lineTo(cx+R*Math.cos(baseA),cy+R*Math.sin(baseA));ctx.strokeStyle=hexRgba(col,.44);ctx.lineWidth=.9;ctx.stroke();
