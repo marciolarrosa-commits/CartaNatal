@@ -153,14 +153,14 @@ input[type=date],input[type=time]{-webkit-appearance:none;appearance:none;}
 .b3d{font-size:.57rem;color:var(--dim);}
 
 /* Logo + contacto — fila horizontal */
-.logo-contact{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-.logo-img{height:42px;border-radius:6px;object-fit:cover;flex-shrink:0;}
-.contact-links{display:flex;gap:4px;flex-wrap:wrap;align-items:center;}
-.clink{display:inline-flex;align-items:center;gap:4px;background:var(--surf2);
-  border:1px solid var(--brd);border-radius:5px;padding:3px 8px;
-  color:var(--txt);text-decoration:none;font-size:.64rem;transition:all .15s;}
+.logo-contact{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.logo-img{height:56px;border-radius:8px;object-fit:cover;flex-shrink:0;}
+.contact-links{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.clink{display:inline-flex;align-items:center;gap:5px;background:var(--surf2);
+  border:1px solid var(--brd);border-radius:6px;padding:6px 11px;
+  color:var(--txt);text-decoration:none;font-size:.74rem;transition:all .15s;}
 .clink:hover{border-color:var(--gold);color:var(--gold);}
-.clink svg{width:11px;height:11px;flex-shrink:0;}
+.clink svg{width:14px;height:14px;flex-shrink:0;}
 .clink-wa svg{color:#25D366;}.clink-ig svg{color:#E1306C;}.clink-fb svg{color:#1877F2;}.clink-yt svg{color:#FF0000;}.clink-em svg{color:var(--gold);}
 
 /* ── Columna derecha ── */
@@ -417,7 +417,7 @@ function renderResult(data,interp,geo){
     const canvas=document.getElementById('wheel');
     const wRect=wrap.getBoundingClientRect();
     // La rueda ocupa la columna central menos: topbar(44)+big3(72)+logo(50)+contacto(42)+gaps(30) ≈ 238
-    const availH=window.innerHeight-244;
+    const availH=window.innerHeight-260;
     const availW=wRect.width>20?wRect.width-10:400;
     const sz=Math.min(availW,availH,700);
     if(sz<120&&tries<10){setTimeout(()=>tryDraw(tries+1),100);return;}
@@ -481,17 +481,16 @@ function drawWheel(chart,sz){
   ctx.beginPath();ctx.arc(cx,cy,rS1,0,Math.PI*2);ctx.strokeStyle='#4a5568';ctx.lineWidth=1;ctx.stroke();
   // House ring
   ctx.beginPath();ctx.arc(cx,cy,rH1,0,Math.PI*2);ctx.fillStyle='#090d15';ctx.fill();ctx.strokeStyle='#2d3748';ctx.lineWidth=.8;ctx.stroke();
+  // Center fill + aspect lines (drawn before house numbers so labels stay on top)
+  ctx.beginPath();ctx.arc(cx,cy,rH1,0,Math.PI*2);ctx.fillStyle='#0a0e18';ctx.fill();
+  const ASPC={0:['rgba(210,100,255,1)',[],2.2],60:['rgba(90,190,255,1)',[5,3],1.8],90:['rgba(255,75,75,1)',[],2.2],120:['rgba(255,255,255,1)',[],2.8],150:['rgba(255,210,70,1)',[4,3],1.5],180:['rgba(255,120,120,1)',[7,4],1.8]};
+  chart.aspects.forEach(asp=>{const p1=chart.planets[asp.p1],p2=chart.planets[asp.p2];if(!p1||!p2)return;const cfg=ASPC[asp.angle]||['rgba(255,255,255,.3)',[],1];const a1=ca(p1.lon),a2=ca(p2.lon);ctx.beginPath();ctx.moveTo(cx+rH1*Math.cos(a1),cy+rH1*Math.sin(a1));ctx.lineTo(cx+rH1*Math.cos(a2),cy+rH1*Math.sin(a2));ctx.strokeStyle=cfg[0];ctx.lineWidth=cfg[2];ctx.setLineDash(cfg[1]);ctx.stroke();ctx.setLineDash([]);});
   for(let h=0;h<12;h++){const a=ca(chart.houses[h].lon),isAx=[0,3,6,9].includes(h);ctx.beginPath();ctx.moveTo(cx+rH0*Math.cos(a),cy+rH0*Math.sin(a));ctx.lineTo(cx+rH1*Math.cos(a),cy+rH1*Math.sin(a));ctx.strokeStyle=isAx?'#c9a84c':'#3d4a5c';ctx.lineWidth=isAx?1.8:.8;ctx.stroke();
     const midA=ca((chart.asc.lon+h*30+15)%360);ctx.font='bold '+Math.round(W*.027)+'px Inter';ctx.fillStyle=isAx?'#c9a84c':'#6b7280';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(h+1,cx+((rH0+rH1)/2)*Math.cos(midA),cy+((rH0+rH1)/2)*Math.sin(midA));}
   ctx.beginPath();ctx.arc(cx,cy,rH0,0,Math.PI*2);ctx.strokeStyle='#2d3748';ctx.lineWidth=.8;ctx.stroke();
   // Axes
   [[ascLon,'AC'],[(ascLon+180)%360,'DC'],[mcLon,'MC'],[(mcLon+180)%360,'IC']].forEach(([lon,lbl])=>{const a=ca(lon);ctx.beginPath();ctx.moveTo(cx+rH0*Math.cos(a),cy+rH0*Math.sin(a));ctx.lineTo(cx+rS0*Math.cos(a),cy+rS0*Math.sin(a));ctx.strokeStyle='#c9a84c';ctx.lineWidth=2.2;ctx.stroke();ctx.font='bold '+Math.round(W*.02)+'px Inter';ctx.fillStyle='#c9a84c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lbl,cx+(rH1-W*.03)*Math.cos(a),cy+(rH1-W*.03)*Math.sin(a));});
   const mcA=ca(mcLon);ctx.font='bold '+Math.round(W*.018)+'px Inter';ctx.fillStyle='#c9a84c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('MC '+chart.mc.deg+'°'+String(chart.mc.min).padStart(2,'0')+"'",cx+(R-W*.019)*Math.cos(mcA),cy+(R-W*.019)*Math.sin(mcA));
-  // Center
-  ctx.beginPath();ctx.arc(cx,cy,rH0,0,Math.PI*2);ctx.fillStyle='#0a0e18';ctx.fill();ctx.strokeStyle='#2d3748';ctx.lineWidth=.8;ctx.stroke();
-  // Aspect lines — colores sólidos y visibles
-  const ASPC={0:['rgba(210,100,255,1)',[],2.2],60:['rgba(90,190,255,1)',[5,3],1.8],90:['rgba(255,75,75,1)',[],2.2],120:['rgba(255,255,255,1)',[],2.8],150:['rgba(255,210,70,1)',[4,3],1.5],180:['rgba(255,120,120,1)',[7,4],1.8]};
-  chart.aspects.forEach(asp=>{const p1=chart.planets[asp.p1],p2=chart.planets[asp.p2];if(!p1||!p2)return;const cfg=ASPC[asp.angle]||['rgba(255,255,255,.3)',[],1];const a1=ca(p1.lon),a2=ca(p2.lon);ctx.beginPath();ctx.moveTo(cx+rH0*Math.cos(a1),cy+rH0*Math.sin(a1));ctx.lineTo(cx+rH0*Math.cos(a2),cy+rH0*Math.sin(a2));ctx.strokeStyle=cfg[0];ctx.lineWidth=cfg[2];ctx.setLineDash(cfg[1]);ctx.stroke();ctx.setLineDash([]);});
   // Planets
   const plist=P_ORDER.map(k=>{const p=chart.planets[k];if(!p)return null;return{key:k,p,baseA:ca(p.lon),drawA:ca(p.lon)};}).filter(Boolean);
   const MIN_GAP=0.19;for(let it=0;it<30;it++){let mv=false;for(let i=0;i<plist.length;i++)for(let j=i+1;j<plist.length;j++){let df=plist[j].drawA-plist[i].drawA;if(df>Math.PI)df-=2*Math.PI;if(df<-Math.PI)df+=2*Math.PI;if(Math.abs(df)<MIN_GAP){const push=(MIN_GAP-Math.abs(df))/2+.003;plist[i].drawA-=push*(df<0?-1:1);plist[j].drawA+=push*(df<0?-1:1);mv=true;}}if(!mv)break;}
