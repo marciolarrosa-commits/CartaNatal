@@ -509,9 +509,18 @@ function drawWheel(chart,sz){
     ctx.font=Math.round(W*.013)+'px Inter';ctx.fillStyle='#9ca3af';ctx.fillText(p.deg+'°'+String(p.min).padStart(2,'0')+"'"+(p.retrograde?'R':''),lx,ly+W*.018);});}
 
 async function getInterp(nombre,chart,meta){
-  const p=chart.planets;const f=k=>p[k]?p[k].sign+' '+p[k].deg+'°'+String(p[k].min).padStart(2,'0')+"' (C"+p[k].house+')':'-';
-  const prompt='Sos un astrologo experto y empatico. Escribe una interpretacion astrologica personalizada en espanol, entre 120 y 150 palabras. Sin asteriscos ni markdown, prosa calida y directa.\n\nNombre: '+(nombre||'la consultante')+'\nFecha: '+meta.fecha+' '+meta.hora+', '+meta.ciudad+'\nSol: '+f('Sun')+'\nLuna: '+f('Moon')+'\nAsc: '+chart.asc?.sign+' '+chart.asc?.deg+'°'+String(chart.asc?.min).padStart(2,'0')+"'\nMercurio: "+f('Mercury')+'\nVenus: '+f('Venus')+'\nMarte: '+f('Mars')+'\nJupiter: '+f('Jupiter')+'\nSaturno: '+f('Saturn');
-  try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:prompt}]})});const d=await r.json();return d.content?.[0]?.text||(nombre||'La consultante')+' nace con el Sol en '+(p.Sun?.sign||'-')+'.';}catch(e){return(nombre||'La consultante')+' nace con el Sol en '+(p.Sun?.sign||'-')+', la Luna en '+(p.Moon?.sign||'-')+' y el Ascendente en '+chart.asc?.sign+'.';}
+  const p=chart.planets;
+  try{
+    const r=await fetch(window.location.origin+'/api/interp',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nombre,chart,meta})
+    });
+    const d=await r.json();
+    return d.text||(nombre||'La consultante')+' nace con el Sol en '+(p.Sun?.sign||'-')+'.';
+  }catch(e){
+    return(nombre||'La consultante')+' nace con el Sol en '+(p.Sun?.sign||'-')+', la Luna en '+(p.Moon?.sign||'-')+' y el Ascendente en '+chart.asc?.sign+'.';
+  }
 }
 
 (function(){document.body.style.overflow='hidden';const s=document.getElementById('splash');setTimeout(()=>{s.classList.add('out');document.body.style.overflow='';setTimeout(()=>s.style.display='none',900);},5000);})();

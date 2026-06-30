@@ -40,6 +40,28 @@ app.post('/api/chart', (req, res) => {
   }
 });
 
+const { buildInterpretation } = require('./backend/interp_engine');
+
+app.post('/api/interp', (req, res) => {
+  try {
+    const { nombre, chart } = req.body;
+    if (!chart || !chart.planets) {
+      return res.status(400).json({ error: 'Falta chart en el body' });
+    }
+    const text = buildInterpretation(nombre, chart);
+    res.json({ text });
+  } catch (err) {
+    console.error('[/api/interp]', err.message);
+    res.json({ text: fallbackInterp(req.body?.nombre, req.body?.chart) });
+  }
+});
+
+function fallbackInterp(nombre, chart) {
+  const p = chart?.planets || {};
+  return (nombre || 'La consultante') + ' nace con el Sol en ' + (p.Sun?.sign || '-')
+    + ', la Luna en ' + (p.Moon?.sign || '-') + ' y el Ascendente en ' + (chart?.asc?.sign || '-') + '.';
+}
+
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, engine: 'ephemeris Moshier + Placidus (Pure Node.js)', node: process.version });
 });
