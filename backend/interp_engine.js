@@ -99,19 +99,6 @@ function buildInterpretation(nombre, chart) {
     frases.push(`Su Ascendente en ${ascSign} hace que ${ASC[ascSign]}.`);
   }
 
-  const aspectoFrase = pickAspectSentence(chart);
-  if (aspectoFrase) frases.push(aspectoFrase);
-
-  // Cierre con resumen de elementos dominantes, si está disponible
-  if (chart.summary?.elements) {
-    const el = chart.summary.elements;
-    const dominante = Object.entries(el).sort((a, b) => b[1] - a[1])[0];
-    const NOMBRES_EL = { fire: 'Fuego', earth: 'Tierra', air: 'Aire', water: 'Agua' };
-    if (dominante && NOMBRES_EL[dominante[0]]) {
-      frases.push(`El elemento que predomina en su carta es ${NOMBRES_EL[dominante[0]]}, marcando el tono general de su forma de estar en el mundo.`);
-    }
-  }
-
   return frases.join(' ');
 }
 
